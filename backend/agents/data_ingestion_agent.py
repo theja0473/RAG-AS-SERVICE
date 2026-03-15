@@ -1,12 +1,11 @@
 """Data ingestion agent for extracting text from various sources.
 
-This module provides a CrewAI agent for extracting text from PDF, DOCX,
+This module provides functions for extracting text from PDF, DOCX,
 XLSX, TXT files, and URLs.
 """
 
 from typing import Dict, Any
 from pathlib import Path
-import io
 
 import pdfplumber
 from docx import Document
@@ -14,11 +13,7 @@ from openpyxl import load_workbook
 import httpx
 from bs4 import BeautifulSoup
 
-from crewai import Agent, Task
-from crewai_tools import tool
 
-
-@tool("Extract PDF Text")
 def extract_pdf_text(file_path: str) -> str:
     """Extract text from PDF file.
 
@@ -39,7 +34,6 @@ def extract_pdf_text(file_path: str) -> str:
     return "\n\n".join(text_parts)
 
 
-@tool("Extract DOCX Text")
 def extract_docx_text(file_path: str) -> str:
     """Extract text from DOCX file.
 
@@ -59,7 +53,6 @@ def extract_docx_text(file_path: str) -> str:
     return "\n\n".join(text_parts)
 
 
-@tool("Extract XLSX Text")
 def extract_xlsx_text(file_path: str) -> str:
     """Extract text from XLSX file.
 
@@ -85,7 +78,6 @@ def extract_xlsx_text(file_path: str) -> str:
     return "\n".join(text_parts)
 
 
-@tool("Extract TXT Text")
 def extract_txt_text(file_path: str) -> str:
     """Extract text from TXT file.
 
@@ -99,7 +91,6 @@ def extract_txt_text(file_path: str) -> str:
         return f.read()
 
 
-@tool("Extract URL Text")
 def extract_url_text(url: str) -> str:
     """Extract text from URL.
 
@@ -149,7 +140,7 @@ def extract_text_from_file(file_path: str, source_type: str) -> Dict[str, Any]:
     if source_type not in extractors:
         raise ValueError(f"Unsupported source type: {source_type}")
 
-    text = extractors[source_type].func(file_path)
+    text = extractors[source_type](file_path)
 
     return {
         "text": text,
@@ -170,7 +161,7 @@ def extract_text_from_url(url: str) -> Dict[str, Any]:
     Returns:
         Dictionary with extracted text and metadata.
     """
-    text = extract_url_text.func(url)
+    text = extract_url_text(url)
 
     return {
         "text": text,
@@ -179,44 +170,3 @@ def extract_text_from_url(url: str) -> Dict[str, Any]:
             "source_type": "url",
         }
     }
-
-
-def create_data_ingestion_agent() -> Agent:
-    """Create data ingestion agent.
-
-    Returns:
-        CrewAI Agent for data ingestion.
-    """
-    return Agent(
-        role="Data Ingestion Specialist",
-        goal="Extract clean, structured text from various document formats",
-        backstory="""You are an expert in document processing and text extraction.
-        Your specialty is extracting text from PDFs, Word documents, Excel spreadsheets,
-        and web pages while preserving structure and important information.""",
-        tools=[
-            extract_pdf_text,
-            extract_docx_text,
-            extract_xlsx_text,
-            extract_txt_text,
-            extract_url_text,
-        ],
-        verbose=True,
-    )
-
-
-def create_data_ingestion_task(agent: Agent, file_path: str, source_type: str) -> Task:
-    """Create data ingestion task.
-
-    Args:
-        agent: Data ingestion agent.
-        file_path: Path to file.
-        source_type: Type of source.
-
-    Returns:
-        CrewAI Task for data ingestion.
-    """
-    return Task(
-        description=f"Extract all text content from {source_type} file at {file_path}",
-        agent=agent,
-        expected_output="Clean, structured text extracted from the document",
-    )

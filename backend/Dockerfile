@@ -16,17 +16,11 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry==1.7.1
-
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
-
-# Configure Poetry to not create virtual environment
-RUN poetry config virtualenvs.create false
+COPY requirements.txt ./
 
 # Install dependencies
-RUN poetry install --no-interaction --no-ansi --no-root
+RUN pip install -r requirements.txt
 
 # Copy application code
 COPY . .

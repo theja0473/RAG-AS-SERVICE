@@ -7,7 +7,7 @@ and grounding in retrieved context.
 from typing import List, Dict, Any
 
 from langchain_ollama import OllamaLLM
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 from config import get_settings
 

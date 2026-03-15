@@ -7,12 +7,10 @@ from the vector database based on user queries.
 from typing import List, Dict, Any, Optional
 
 from crewai import Agent, Task
-from crewai_tools import tool
 
 from rag.retriever import get_retriever
 
 
-@tool("Search Vector Database")
 def search_vector_database(
     query: str,
     top_k: int = 5,
@@ -42,7 +40,6 @@ def search_vector_database(
     return results
 
 
-@tool("Get Document Chunks")
 def get_document_chunks(document_id: str, top_k: int = 10) -> List[Dict[str, Any]]:
     """Get all chunks from a specific document.
 
@@ -72,7 +69,7 @@ def retrieve_relevant_chunks(
     Returns:
         List of relevant chunks with metadata.
     """
-    results = search_vector_database.func(
+    results = search_vector_database(
         query=query,
         top_k=top_k,
         score_threshold=score_threshold,

@@ -8,7 +8,6 @@ from typing import Dict, Any, List
 import re
 
 from crewai import Agent, Task
-from crewai_tools import tool
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -16,7 +15,6 @@ from rag.generator import get_generator
 from database.models import EvaluationLog
 
 
-@tool("Evaluate Answer Relevance")
 def evaluate_relevance(query: str, answer: str) -> float:
     """Evaluate how relevant the answer is to the query.
 
@@ -40,7 +38,6 @@ def evaluate_relevance(query: str, answer: str) -> float:
     return min(relevance, 1.0)
 
 
-@tool("Evaluate Answer Groundedness")
 def evaluate_groundedness(answer: str, contexts: List[Dict[str, Any]]) -> float:
     """Evaluate how well the answer is grounded in the provided context.
 
@@ -83,7 +80,6 @@ def evaluate_groundedness(answer: str, contexts: List[Dict[str, Any]]) -> float:
     return min(groundedness, 1.0)
 
 
-@tool("Evaluate Hallucination Risk")
 def evaluate_hallucination_risk(answer: str, contexts: List[Dict[str, Any]]) -> float:
     """Evaluate the risk of hallucination in the answer.
 
@@ -153,9 +149,9 @@ def evaluate_answer(
     Returns:
         Dictionary with evaluation scores.
     """
-    relevance_score = evaluate_relevance.func(query, answer)
-    groundedness_score = evaluate_groundedness.func(answer, contexts)
-    hallucination_risk = evaluate_hallucination_risk.func(answer, contexts)
+    relevance_score = evaluate_relevance(query, answer)
+    groundedness_score = evaluate_groundedness(answer, contexts)
+    hallucination_risk = evaluate_hallucination_risk(answer, contexts)
 
     return {
         "relevance_score": round(relevance_score, 3),
