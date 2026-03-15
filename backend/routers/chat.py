@@ -24,6 +24,7 @@ class QueryRequest(BaseModel):
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Chat session ID")
     top_k: int = Field(default=5, ge=1, le=20, description="Number of documents to retrieve")
     score_threshold: float = Field(default=0.5, ge=0.0, le=1.0, description="Minimum similarity score")
+    use_graph_rag: bool = Field(default=True, description="Enable knowledge graph enrichment")
 
 
 class SourceResponse(BaseModel):
