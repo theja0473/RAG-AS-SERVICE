@@ -1,6 +1,6 @@
 # OpenAgentRAG
 
-**Self-hostable agentic RAG platform powered by Ollama, ChromaDB, and CrewAI**
+**Self-hostable agentic RAG platform powered by Ollama, ChromaDB, Neo4j, and CrewAI**
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
@@ -14,7 +14,8 @@ OpenAgentRAG is an enterprise-grade, fully self-hostable Retrieval-Augmented Gen
 ## Features
 
 - **Multi-Agent Architecture**: CrewAI-powered agents for query understanding, retrieval, synthesis, and evaluation
-- **Hybrid Retrieval**: Combines semantic search (ChromaDB) with keyword matching for optimal relevance
+- **Graph RAG**: Knowledge graph integration with Neo4j — entities and relationships are extracted from documents and used to enrich retrieval with connected context
+- **Hybrid Retrieval**: Combines semantic search (ChromaDB) with keyword matching and knowledge graph traversal for optimal relevance
 - **Query Expansion**: Automatically generates query variations to improve retrieval coverage
 - **Self-Improving Pipeline**: Feedback loop for continuous quality enhancement based on user interactions
 - **100% Self-Hosted**: Run entirely on your infrastructure with Ollama for LLM inference
@@ -68,6 +69,17 @@ OpenAgentRAG is an enterprise-grade, fully self-hostable Retrieval-Augmented Gen
 │ - Semantic      │ │ - Mistral       │ │ - Metadata      │
 │   Search        │ │ - Custom models │ │ - Processed     │
 └─────────────────┘ └─────────────────┘ └─────────────────┘
+        │
+        │  Graph-enhanced retrieval
+        ▼
+┌─────────────────┐
+│ Knowledge Graph │
+│ (Neo4j)         │
+│                 │
+│ - Entities      │
+│ - Relationships │
+│ - Graph RAG     │
+└─────────────────┘
 ```
 
 ---
@@ -85,7 +97,7 @@ OpenAgentRAG is an enterprise-grade, fully self-hostable Retrieval-Augmented Gen
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/open-agent-rag.git
+   git clone https://github.com/theja0473/RAG-AS-SERVICE.git
    cd open-agent-rag
    ```
 
@@ -110,6 +122,7 @@ OpenAgentRAG is an enterprise-grade, fully self-hostable Retrieval-Augmented Gen
    - Backend API: http://localhost:8000
    - API Documentation: http://localhost:8000/docs
    - ChromaDB Admin: http://localhost:8100
+   - Neo4j Browser: http://localhost:7474 (credentials: neo4j/openagentrag)
 
 ### Post-Setup
 
@@ -142,6 +155,10 @@ All configuration is managed through the `.env` file. Key parameters:
 | `SIMILARITY_THRESHOLD` | `0.7` | Minimum similarity score for retrieval |
 | `ENABLE_QUERY_EXPANSION` | `true` | Generate query variations |
 | `NUM_QUERY_VARIATIONS` | `2` | Number of query alternatives |
+| `NEO4J_URI` | `bolt://neo4j:7687` | Neo4j connection URI |
+| `NEO4J_USERNAME` | `neo4j` | Neo4j username |
+| `NEO4J_PASSWORD` | `openagentrag` | Neo4j password |
+| `GRAPH_RAG_ENABLED` | `true` | Enable knowledge graph enrichment |
 
 See `.env.example` for the complete list of configuration options.
 
@@ -168,6 +185,7 @@ See `.env.example` for the complete list of configuration options.
 | **Backend** | FastAPI (Python 3.9+) | REST API and async processing |
 | **Frontend** | Next.js 14 (React 18) | Modern web interface with App Router |
 | **Vector DB** | ChromaDB 0.4+ | Semantic search and embedding storage |
+| **Knowledge Graph** | Neo4j 5 Community | Entity/relationship storage and graph traversal |
 | **LLM** | Ollama | Local LLM inference engine |
 | **Agents** | CrewAI | Multi-agent orchestration framework |
 | **Embeddings** | Sentence Transformers | Text-to-vector conversion |
@@ -198,6 +216,7 @@ npm run dev
 **External Dependencies**:
 - Install Ollama locally: https://ollama.ai
 - Run ChromaDB: `docker run -p 8100:8000 chromadb/chroma:latest`
+- Run Neo4j: `docker run -p 7474:7474 -p 7687:7687 -e NEO4J_AUTH=neo4j/openagentrag neo4j:5-community`
 
 ### Project Structure
 
@@ -206,8 +225,8 @@ open-agent-rag/
 ├── backend/
 │   ├── agents/              # CrewAI agent definitions
 │   ├── config/              # Application configuration (Pydantic Settings)
-│   ├── database/            # SQLAlchemy models and ChromaDB client
-│   ├── rag/                 # RAG pipeline (chunking, embedding, retrieval, generation)
+│   ├── database/            # SQLAlchemy models, ChromaDB and Neo4j clients
+│   ├── rag/                 # RAG pipeline (chunking, embedding, retrieval, graph retrieval, generation)
 │   ├── routers/             # FastAPI route handlers
 │   ├── services/            # Business logic layer
 │   ├── main.py              # FastAPI application entry point
@@ -279,7 +298,7 @@ If you use OpenAgentRAG in your research or project, please cite:
   title = {OpenAgentRAG: Self-Hostable Agentic RAG Platform},
   author = {OpenAgentRAG Contributors},
   year = {2026},
-  url = {https://github.com/yourusername/open-agent-rag},
+  url = {https://github.com/theja0473/RAG-AS-SERVICE},
   version = {0.1.0}
 }
 ```
@@ -291,7 +310,7 @@ If you use OpenAgentRAG in your research or project, please cite:
 - [x] Core RAG pipeline with hybrid retrieval
 - [x] Multi-agent orchestration with CrewAI
 - [x] Docker-based deployment
-- [ ] Graph RAG with knowledge graph integration
+- [x] Graph RAG with knowledge graph integration (Neo4j)
 - [ ] Multi-modal support (images, audio)
 - [ ] Fine-tuning pipeline for domain adaptation
 - [ ] Kubernetes deployment manifests
@@ -303,8 +322,8 @@ If you use OpenAgentRAG in your research or project, please cite:
 ## Support
 
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/open-agent-rag/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/open-agent-rag/discussions)
+- **Issues**: [GitHub Issues](https://github.com/theja0473/RAG-AS-SERVICE/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/theja0473/RAG-AS-SERVICE/discussions)
 
 ---
 
