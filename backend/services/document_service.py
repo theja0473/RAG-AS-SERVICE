@@ -12,11 +12,15 @@ import shutil
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+import logging
+
 from config import get_settings
 from database.models import Document
 from agents.data_ingestion_agent import extract_text_from_file, extract_text_from_url
 from agents.embedding_agent import embed_and_store_chunks
 from rag.chunking import SemanticChunker
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentService:
@@ -75,6 +79,9 @@ class DocumentService:
             # Embed and store chunks
             embed_result = embed_and_store_chunks(chunks, document.id)
 
+            # Extract entities and build knowledge graph
+            self._build_knowledge_graph(chunks, str(document.id))
+
             # Update document record
             document.status = "completed"
             document.chunk_count = len(chunks)
@@ -126,6 +133,9 @@ class DocumentService:
             # Embed and store chunks
             embed_result = embed_and_store_chunks(chunks, document.id)
 
+            # Extract entities and build knowledge graph
+            self._build_knowledge_graph(chunks, str(document.id))
+
             # Update document record
             document.status = "completed"
             document.chunk_count = len(chunks)
@@ -139,6 +149,46 @@ class DocumentService:
             document.status = "failed"
             await db.commit()
             raise e
+
+    def _build_knowledge_graph(
+        self, chunks: list[Dict[str, Any]], document_id: str
+    ) -> None:
+        """Extract entities from chunks and store in knowledge graph.
+
+        Args:
+            chunks: List of text chunks.
+            document_id: Document ID for graph association.
+        """
+        if not self.settings.graph_rag_enabled:
+            return
+
+        try:
+            from rag.entity_extractor import get_entity_extractor
+            from database.neo4j_client import get_neo4j_client
+
+            extractor = get_entity_extractor()
+            neo4j_client = get_neo4j_client()
+
+            if not neo4j_client.verify_connectivity():
+                logger.warning("Neo4j not available, skipping knowledge graph build")
+                return
+
+            entities, relationships = extractor.extract_from_chunks(chunks)
+
+            if entities:
+                result = neo4j_client.add_entities_and_relationships(
+                    document_id=document_id,
+                    entities=entities,
+                    relationships=relationships,
+                )
+                logger.info(
+                    "Knowledge graph updated for document %s: %d entities, %d relationships",
+                    document_id,
+                    result["entities_created"],
+                    result["relationships_created"],
+                )
+        except Exception as e:
+            logger.warning("Knowledge graph build failed for document %s: %s", document_id, e)
 
     async def get_document(self, db: AsyncSession, document_id: int) -> Document:
         """Get document by ID.
@@ -201,6 +251,16 @@ class DocumentService:
         from rag.retriever import get_retriever
         retriever = get_retriever()
         retriever.delete_by_document_id(str(document_id))
+
+        # Delete from knowledge graph
+        if self.settings.graph_rag_enabled:
+            try:
+                from database.neo4j_client import get_neo4j_client
+                neo4j_client = get_neo4j_client()
+                if neo4j_client.verify_connectivity():
+                    neo4j_client.delete_document_data(str(document_id))
+            except Exception as e:
+                logger.warning("Failed to delete graph data for document %s: %s", document_id, e)
 
         # Delete file if it exists
         upload_dir = self.settings.ensure_upload_dir()

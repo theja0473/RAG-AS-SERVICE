@@ -55,6 +55,24 @@ class Settings(BaseSettings):
         description="Overlap between chunks in characters"
     )
 
+    # Neo4j Configuration
+    neo4j_uri: str = Field(
+        default="bolt://neo4j:7687",
+        description="Neo4j connection URI"
+    )
+    neo4j_username: str = Field(
+        default="neo4j",
+        description="Neo4j username"
+    )
+    neo4j_password: str = Field(
+        default="openagentrag",
+        description="Neo4j password"
+    )
+    graph_rag_enabled: bool = Field(
+        default=True,
+        description="Enable Graph RAG with knowledge graph"
+    )
+
     # Database Configuration
     sqlite_url: str = Field(
         default="sqlite+aiosqlite:///./data/metadata.db",

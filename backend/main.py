@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_settings
 from database import init_db, close_db
-from routers import documents_router, chat_router, settings_router
+from database.neo4j_client import get_neo4j_client, close_neo4j_client
+from routers import documents_router, chat_router, settings_router, knowledge_graph_router
 
 
 @asynccontextmanager
@@ -36,10 +37,23 @@ async def lifespan(app: FastAPI):
     settings.ensure_data_dir()
     print("Directories initialized")
 
+    # Initialize Neo4j if Graph RAG is enabled
+    if settings.graph_rag_enabled:
+        try:
+            neo4j_client = get_neo4j_client()
+            if neo4j_client.verify_connectivity():
+                neo4j_client.setup_indexes()
+                print("Neo4j knowledge graph initialized")
+            else:
+                print("WARNING: Neo4j not available - Graph RAG features will be limited")
+        except Exception as e:
+            print(f"WARNING: Neo4j initialization failed: {e}")
+
     yield
 
     # Shutdown
     print("Shutting down OpenAgentRAG backend...")
+    close_neo4j_client()
     await close_db()
     print("Database connections closed")
 
@@ -65,6 +79,7 @@ app.add_middleware(
 app.include_router(documents_router)
 app.include_router(chat_router)
 app.include_router(settings_router)
+app.include_router(knowledge_graph_router)
 
 
 @app.get("/")

@@ -11,10 +11,12 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from config import get_settings
 from database.models import ChatHistory
 from agents.retrieval_agent import retrieve_relevant_chunks
 from agents.evaluation_agent import evaluate_answer, log_evaluation
 from rag.generator import get_generator
+from rag.graph_retriever import get_graph_retriever
 
 
 class ChatService:
@@ -23,6 +25,7 @@ class ChatService:
     def __init__(self):
         """Initialize chat service."""
         self.generator = get_generator()
+        self.settings = get_settings()
 
     async def query(
         self,
@@ -53,12 +56,28 @@ class ChatService:
         db.add(user_message)
         await db.commit()
 
-        # Retrieve relevant chunks
-        contexts = retrieve_relevant_chunks(
-            query=question,
-            top_k=top_k,
-            score_threshold=score_threshold,
-        )
+        # Retrieve relevant chunks (with graph enrichment if enabled)
+        if self.settings.graph_rag_enabled:
+            try:
+                graph_retriever = get_graph_retriever()
+                contexts = graph_retriever.retrieve_as_contexts(
+                    query=question,
+                    top_k=top_k,
+                    score_threshold=score_threshold,
+                )
+            except Exception:
+                # Fall back to standard retrieval if graph retrieval fails
+                contexts = retrieve_relevant_chunks(
+                    query=question,
+                    top_k=top_k,
+                    score_threshold=score_threshold,
+                )
+        else:
+            contexts = retrieve_relevant_chunks(
+                query=question,
+                top_k=top_k,
+                score_threshold=score_threshold,
+            )
 
         # Generate answer
         generation_result = self.generator.generate(question, contexts)
