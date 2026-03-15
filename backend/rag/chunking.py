@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 import logging
 import re
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np

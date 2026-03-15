@@ -1,8 +1,6 @@
 """Agents module for OpenAgentRAG backend."""
 
 from .data_ingestion_agent import (
-    create_data_ingestion_agent,
-    create_data_ingestion_task,
     extract_text_from_file,
     extract_text_from_url,
 )
@@ -24,8 +22,6 @@ from .evaluation_agent import (
 )
 
 __all__ = [
-    "create_data_ingestion_agent",
-    "create_data_ingestion_task",
     "extract_text_from_file",
     "extract_text_from_url",
     "create_embedding_agent",

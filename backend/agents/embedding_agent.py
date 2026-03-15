@@ -7,13 +7,11 @@ and storing them in the vector database.
 from typing import List, Dict, Any
 
 from crewai import Agent, Task
-from crewai_tools import tool
 
 from rag.embedding import get_embedding_manager
 from rag.retriever import get_retriever
 
 
-@tool("Generate Embeddings")
 def generate_embeddings(texts: List[str]) -> List[List[float]]:
     """Generate embeddings for text chunks.
 
@@ -27,7 +25,6 @@ def generate_embeddings(texts: List[str]) -> List[List[float]]:
     return embedding_manager.embed_texts(texts)
 
 
-@tool("Store Embeddings in Vector Database")
 def store_embeddings(
     texts: List[str],
     metadatas: List[Dict[str, Any]],
@@ -86,7 +83,7 @@ def embed_and_store_chunks(
     ids = [f"{document_id}_{i}" for i in range(len(chunks))]
 
     # Store in vector database
-    result = store_embeddings.func(texts, metadatas, ids)
+    result = store_embeddings(texts, metadatas, ids)
 
     return {
         "status": "success",
