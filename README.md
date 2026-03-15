@@ -97,7 +97,7 @@ OpenAgentRAG is an enterprise-grade, fully self-hostable Retrieval-Augmented Gen
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/open-agent-rag.git
+   git clone https://github.com/theja0473/RAG-AS-SERVICE.git
    cd open-agent-rag
    ```
 
@@ -298,7 +298,7 @@ If you use OpenAgentRAG in your research or project, please cite:
   title = {OpenAgentRAG: Self-Hostable Agentic RAG Platform},
   author = {OpenAgentRAG Contributors},
   year = {2026},
-  url = {https://github.com/yourusername/open-agent-rag},
+  url = {https://github.com/theja0473/RAG-AS-SERVICE},
   version = {0.1.0}
 }
 ```
@@ -322,8 +322,8 @@ If you use OpenAgentRAG in your research or project, please cite:
 ## Support
 
 - **Documentation**: [docs/](docs/)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/open-agent-rag/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/open-agent-rag/discussions)
+- **Issues**: [GitHub Issues](https://github.com/theja0473/RAG-AS-SERVICE/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/theja0473/RAG-AS-SERVICE/discussions)
 
 ---
 
